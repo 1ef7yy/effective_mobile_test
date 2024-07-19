@@ -4,6 +4,7 @@ import os
 
 
 def read_json(filepath: str) -> Library:
+    """Чтение данных из JSON-файла"""
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File not found: {filepath}")
     with open(filepath, "r") as f:
@@ -18,6 +19,7 @@ def read_json(filepath: str) -> Library:
 
 
 def write_json(filename: str, library: Library) -> None:
+    """Запись данных в JSON-файл"""
     with open(filename, "w+") as f:
         books = [book.__dict__ for book in library.books]
         data = {"books": books}
