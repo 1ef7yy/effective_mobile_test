@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 from models import Book, Library
 import os
@@ -7,7 +9,7 @@ def read_json(filepath: str) -> Library:
     """Чтение данных из JSON-файла"""
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File not found: {filepath}")
-    with open(filepath, "r") as f:
+    with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
         books = data.get("books", [])
         library = Library()
@@ -20,7 +22,7 @@ def read_json(filepath: str) -> Library:
 
 def write_json(filename: str, library: Library) -> None:
     """Запись данных в JSON-файл"""
-    with open(filename, "w+") as f:
+    with open(filename, "w+", encoding="utf-8") as f:
         books = [book.__dict__ for book in library.books]
         data = {"books": books}
-        json.dump(data, f)
+        json.dump(data, f, ensure_ascii=False)

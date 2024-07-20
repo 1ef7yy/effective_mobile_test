@@ -1,3 +1,6 @@
 
 tz.txt
 *.pyc
+library.json
+test1_library.json
+test2_library.json
