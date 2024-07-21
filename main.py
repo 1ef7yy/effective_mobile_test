@@ -18,6 +18,7 @@ def main() -> None:
  5. Изменить статус книги
  6. Загрузить данные из JSON
  7. Выгрузить данные в JSON
+ 8. Выход
 """)
     prompt = input(" > ")
 
@@ -25,8 +26,8 @@ def main() -> None:
         print(" Введите целое число")
         main()
 
-    if int(prompt) not in range(1, 8):
-        print(" Введите число от 1 до 7")
+    if int(prompt) not in range(1, 9):
+        print(" Введите число от 1 до 8")
         main()
 
     match int(prompt):
@@ -44,6 +45,8 @@ def main() -> None:
             load_from_json_prompt()
         case 7:
             save_to_json_prompt()
+        case 8:
+            exit(0)
         case _:
             print(" Произошла ошибка, попробуйте еще раз")
             main()
@@ -63,13 +66,17 @@ def add_book_prompt() -> None:
         title = input(" Название: ")
         author = input(" Автор: ")
         year = int(input(" Год: "))
-        status = input(" Статус: ")
+        status_num = input(" Статус (1 - в наличии, 2- выдана): ")
+        if status_num not in ("1", "2"):
+            print("\n Введите 1 или 2!\n")
+            add_book_prompt()
+        status = "в наличии" if int(status_num) == 1 else "выдана"
         book = Book(title, author, year, status)
         user_library.add_book(book)
         print("Книга успешно добавлена!")
         main()
     except Exception as e:
-        print(f" Ошибка: {repr(e)}\n\n")
+        print(f" Ошибка: {e.__str__()}\n\n")
         add_book_prompt()
 
 
@@ -93,7 +100,7 @@ def delete_book_prompt() -> None:
         print("Книга успешно удалена!")
         main()
     except Exception as e:
-        print(f" Ошибка: {repr(e)}\n\n")
+        print(f" Ошибка: {e.__str__()}\n\n")
         delete_book_prompt()
 
 
@@ -108,7 +115,7 @@ def get_book_by_id_prompt() -> None:
         print(f"{book.id}: {book.title}, {book.author}, {book.year}, {book.status}")
         main()
     except Exception as e:
-        print(f" Ошибка: {repr(e)}\n\n")
+        print(f" Ошибка: {e.__str__()}\n\n")
         get_book_by_id_prompt()
 
 
@@ -128,12 +135,13 @@ def change_book_status_prompt() -> None:
 
     try:
         book_id = int(input(" ID книги: "))
-        new_status = input(" Новый статус: ")
-        user_library.change_book_status(book_id, new_status)
+        status_id = int(input(" ID статуса (1 - выдана, 2 - в наличии): "))
+        status = ["выдана", "в наличии"][status_id - 1]
+        user_library.change_book_status(book_id, status)
         print("Статус книги успешно изменен!")
         main()
     except Exception as e:
-        print(f" Ошибка: {repr(e)}\n\n")
+        print(f" Ошибка: {e.__str__()}\n\n")
         change_book_status_prompt()
 
 
@@ -157,12 +165,26 @@ def load_from_json_prompt() -> None:
         main()
 
     except Exception as e:
-        print(f" Ошибка: {repr(e)}\n\n")
+        print(f" Ошибка: {e.__str__()}\n\n")
         load_from_json_prompt()
 
 
 def save_to_json_prompt() -> None:
+    print("Это действие перезапишет данные в JSON-файле. Продолжить?")
+    print(" 1. Да\n 2. Нет, назад")
+    save_prompt = input(" > ")
+    if int(save_prompt) not in (1, 2):
+        print(" Введите 1 или 2")
+        load_from_json_prompt()
+    if save_prompt == "2":
+        main()
+        
     try:
+        if int(save_prompt) not in (1, 2):
+            print(" Введите 1 или 2")
+            save_to_json_prompt()
+        if save_prompt == "2":
+            main()
         print("Введите путь к JSON-файлу:")
         path = input(" > ")
 
@@ -171,7 +193,7 @@ def save_to_json_prompt() -> None:
         print("Данные успешно сохранены!")
         main()
     except Exception as e:
-        print(f" Ошибка: {repr(e)}\n\n")
+        print(f" Ошибка: {e.__str__()}\n\n")
         main()
 
 

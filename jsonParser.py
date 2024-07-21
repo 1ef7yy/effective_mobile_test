@@ -7,6 +7,7 @@ import os
 
 def read_json(filepath: str) -> Library:
     """Чтение данных из JSON-файла"""
+    # проверка существования файла
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File not found: {filepath}")
     with open(filepath, "r", encoding="utf-8") as f:
@@ -25,4 +26,5 @@ def write_json(filename: str, library: Library) -> None:
     with open(filename, "w+", encoding="utf-8") as f:
         books = [book.__dict__ for book in library.books]
         data = {"books": books}
+        # ensure_ascii=False обязателен, чтобы не было проблем с кириллицей
         json.dump(data, f, ensure_ascii=False)
