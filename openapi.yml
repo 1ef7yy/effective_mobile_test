@@ -39,6 +39,7 @@ paths:
           required: false
           schema:
             type: number
+            default: 10
         - name: offset
           in: query
           required: false
@@ -54,6 +55,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Song'
+
+        '204':
+          description: No content
+
         '400':
           description: Bad request
 

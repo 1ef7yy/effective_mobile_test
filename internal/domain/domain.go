@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/1ef7yy/effective_mobile_test/internal/models"
 	"github.com/1ef7yy/effective_mobile_test/internal/storage/db"
 	"github.com/1ef7yy/effective_mobile_test/pkg/logger"
 )
@@ -15,6 +16,7 @@ type domain struct {
 }
 
 type Domain interface {
+	GetSongs(limit, offset int) ([]models.Song, error)
 }
 
 func NewDomain(logger logger.Logger) (Domain, error) {
