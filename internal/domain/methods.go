@@ -11,3 +11,14 @@ func (d *domain) GetSongs(limit, offset int) ([]models.Song, error) {
 
 	return songs, nil
 }
+
+func (d *domain) DeleteSong(group, song string) error {
+	err := d.pg.DeleteSong(group, song)
+
+	if err != nil {
+		d.log.Error("error deleting a song: " + err.Error())
+		return err
+	}
+
+	return nil
+}

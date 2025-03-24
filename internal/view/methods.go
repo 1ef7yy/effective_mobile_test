@@ -66,7 +66,25 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-func (v *view) GetText(w http.ResponseWriter, r *http.Request)    {}
-func (v *view) DeleteSong(w http.ResponseWriter, r *http.Request) {}
+func (v *view) GetText(w http.ResponseWriter, r *http.Request) {}
+func (v *view) DeleteSong(w http.ResponseWriter, r *http.Request) {
+	group := r.URL.Query().Get("group")
+	song := r.URL.Query().Get("song")
+
+	if group == "" || song == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err := v.domain.DeleteSong(group, song)
+
+	if err != nil {
+		v.log.Error("error deleting a song: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
 func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {}
 func (v *view) EditSong(w http.ResponseWriter, r *http.Request)   {}

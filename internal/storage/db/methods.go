@@ -31,3 +31,14 @@ func (p *Postgres) GetSongs(limit, offset int) ([]models.Song, error) {
 
 	return songs, nil
 }
+
+func (p *Postgres) DeleteSong(group, song string) error {
+	_, err := p.DB.Query(context.Background(), "DELETE FROM songs WHERE group_name = $1 AND song = $2", group, song)
+
+	if err != nil {
+		p.log.Error("error deleting a song: " + err.Error())
+		return err
+	}
+
+	return nil
+}
