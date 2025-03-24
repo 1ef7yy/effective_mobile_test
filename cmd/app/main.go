@@ -38,4 +38,5 @@ func main() {
 	if err := http.ListenAndServe(serverAddr, mux); err != nil {
 		logger.Error("Error starting server: " + err.Error())
 	}
+
 }
