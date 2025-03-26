@@ -64,14 +64,58 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(resp)
 	if err != nil {
 		v.log.Error("error writing to client: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
+}
+
+func (v *view) GetSong(w http.ResponseWriter, r *http.Request) {
+	group := r.URL.Query().Get("group")
+
+	song := r.URL.Query().Get("song")
+
+	if group == "" || song == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	songData, err := v.domain.GetSong(group, song)
+
+	if err == errors.SongNotFound {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		v.log.Error(fmt.Sprintf("error getting song %s - %s: %s", group, song, err.Error()))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := json.Marshal(songData)
+
+	if err != nil {
+		v.log.Error("error marshalling song data: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = w.Write(resp)
+
+	if err != nil {
+		v.log.Error("error writing to client: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
+
 func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 
 	group := r.URL.Query().Get("group")
@@ -141,13 +185,15 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(resp)
 
 	if err != nil {
 		v.log.Error("error writing response: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 
 }
 func (v *view) DeleteSong(w http.ResponseWriter, r *http.Request) {
@@ -245,7 +291,6 @@ func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
-
 	_, err = w.Write(resp)
 
 	if err != nil {

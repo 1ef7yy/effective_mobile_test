@@ -10,7 +10,7 @@ import (
 
 func (p *Postgres) GetSongs(limit, offset int) ([]models.Song, error) {
 	// context work?
-	val, err := p.DB.Query(context.Background(), "SELECT group_name, song, release_date, text, link FROM songs ORDER BY song LIMIT $1 OFFSET $2", limit, offset)
+	val, err := p.DB.Query(context.Background(), "SELECT group_name, song, release_date, text, link FROM songs ORDER BY group_name LIMIT $1 OFFSET $2", limit, offset)
 
 	if err != nil {
 		p.log.Error("error getting songs: " + err.Error())
@@ -32,6 +32,31 @@ func (p *Postgres) GetSongs(limit, offset int) ([]models.Song, error) {
 	}
 
 	return songs, nil
+}
+
+func (p *Postgres) GetSong(group, song string) (models.Song, error) {
+	val, err := p.DB.Query(context.Background(), "SELECT group_name, song, release_date, text, link FROM songs WHERE group_name=$1 AND song=$2", group, song)
+
+	if err != nil {
+		p.log.Error("error getting song from db: " + err.Error())
+		return models.Song{}, err
+	}
+
+	defer val.Close()
+
+	if !val.Next() {
+		return models.Song{}, errors.SongNotFound
+	}
+
+	var songData models.Song
+
+	err = val.Scan(&songData.Group, &songData.Song, &songData.ReleaseDate, &songData.Text, &songData.Link)
+	if err != nil {
+		p.log.Error("error scanning into songData struct: " + err.Error())
+		return models.Song{}, err
+	}
+
+	return songData, nil
 }
 
 func (p *Postgres) GetSongText(group, song string) (string, error) {

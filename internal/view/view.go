@@ -14,6 +14,7 @@ type view struct {
 
 type View interface {
 	GetSongs(w http.ResponseWriter, r *http.Request)
+	GetSong(w http.ResponseWriter, r *http.Request)
 	GetText(w http.ResponseWriter, r *http.Request)
 	DeleteSong(w http.ResponseWriter, r *http.Request)
 	CreateSong(w http.ResponseWriter, r *http.Request)

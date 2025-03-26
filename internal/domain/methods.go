@@ -23,6 +23,21 @@ func (d *domain) GetSongs(limit, offset int) ([]models.Song, error) {
 	return songs, nil
 }
 
+func (d *domain) GetSong(group, song string) (models.Song, error) {
+	songData, err := d.pg.GetSong(group, song)
+
+	if err == errors.SongNotFound {
+		return models.Song{}, err
+	}
+
+	if err != nil {
+		d.log.Error("error getting song data: " + err.Error())
+		return models.Song{}, err
+	}
+
+	return songData, nil
+}
+
 func (d *domain) GetText(group, song string, limit, offset int) (models.TextResponse, error) {
 	text, err := d.pg.GetSongText(group, song)
 

@@ -17,6 +17,7 @@ type domain struct {
 
 type Domain interface {
 	GetSongs(limit, offset int) ([]models.Song, error)
+	GetSong(group, song string) (models.Song, error)
 	GetText(group, song string, limit, offset int) (models.TextResponse, error)
 	DeleteSong(group, song string) error
 	CreateSong(models.CreateSongDTO) (models.Song, error)
