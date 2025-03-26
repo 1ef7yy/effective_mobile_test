@@ -21,10 +21,6 @@ func (v *Router) Endpoints() http.Handler {
 		v.View.GetSongs(w, r)
 	}))
 
-	mux.Handle("GET /song", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		v.View.GetSong(w, r)
-	}))
-
 	mux.Handle("GET /text", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v.View.GetText(w, r)
 	}))

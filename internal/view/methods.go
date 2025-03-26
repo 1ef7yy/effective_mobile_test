@@ -13,14 +13,15 @@ import (
 func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 
 	var err error
-	var limit int
-	var offset int
+	// default values
+	var (
+		limit  = 10
+		offset = 0
+	)
 
 	limitQuery := r.URL.Query().Get("limit")
 
-	if limitQuery == "" {
-		limit = 10
-	} else {
+	if limitQuery != "" {
 		limit, err = strconv.Atoi(limitQuery)
 		if err != nil {
 			v.log.Error("limit is not a number")
@@ -31,9 +32,7 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 
 	offsetQuery := r.URL.Query().Get("offset")
 
-	if offsetQuery == "" {
-		offset = 0
-	} else {
+	if offsetQuery != "" {
 		offset, err = strconv.Atoi(offsetQuery)
 		if err != nil {
 			v.log.Error("offset is not a number")
@@ -42,9 +41,26 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if limit < 0 || offset < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if limit == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	group := r.URL.Query().Get("group")
+	song := r.URL.Query().Get("song")
+
 	v.log.Debug(fmt.Sprintf("limitQuery: %s, offsetQuery: %s", limitQuery, offsetQuery))
 
-	songs, err := v.domain.GetSongs(limit, offset)
+	songs, err := v.domain.GetSongs(r.Context(), limit, offset, group, song)
+
+	if err == errors.OffsetOutOfRangeErr {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if err != nil {
 		v.log.Error("error gettings songs: " + err.Error())
@@ -64,56 +80,14 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(resp)
 	if err != nil {
 		v.log.Error("error writing to client: " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 
-}
-
-func (v *view) GetSong(w http.ResponseWriter, r *http.Request) {
-	group := r.URL.Query().Get("group")
-
-	song := r.URL.Query().Get("song")
-
-	if group == "" || song == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	songData, err := v.domain.GetSong(group, song)
-
-	if err == errors.SongNotFound {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	if err != nil {
-		v.log.Error(fmt.Sprintf("error getting song %s - %s: %s", group, song, err.Error()))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	resp, err := json.Marshal(songData)
-
-	if err != nil {
-		v.log.Error("error marshalling song data: " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	_, err = w.Write(resp)
-
-	if err != nil {
-		v.log.Error("error writing to client: " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +135,12 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 
 	v.log.Debug(fmt.Sprintf("offset: %d, limit: %d", offset, limit))
 
-	text, err := v.domain.GetText(group, song, limit, offset)
+	if limit < 0 || offset < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	text, err := v.domain.GetText(r.Context(), group, song, limit, offset)
 
 	if err == errors.OffsetOutOfRangeErr {
 		w.WriteHeader(http.StatusBadRequest)
@@ -170,6 +149,11 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 			v.log.Error("error writing to client: " + err.Error())
 			return
 		}
+	}
+
+	if err == errors.SongNotFoundErr {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	if err != nil {
@@ -205,7 +189,7 @@ func (v *view) DeleteSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := v.domain.DeleteSong(group, song)
+	err := v.domain.DeleteSong(r.Context(), group, song)
 
 	if err != nil {
 		v.log.Error("error deleting a song: " + err.Error())
@@ -233,7 +217,17 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	song, err := v.domain.CreateSong(songRequest)
+	song, err := v.domain.CreateSong(r.Context(), songRequest)
+
+	if err == errors.AlreadyExistsErr {
+		w.WriteHeader(http.StatusConflict)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			v.log.Error("error writing to client: " + err.Error())
+			return
+		}
+		return
+	}
 
 	if err != nil {
 		v.log.Error("error creating a song: " + err.Error())
@@ -253,8 +247,9 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		v.log.Error("error writing to client: " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 }
 func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	var editRequest models.EditSongDTO
@@ -269,9 +264,14 @@ func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	song, err := v.domain.EditSong(editRequest)
+	if editRequest.Song == "" || editRequest.Group == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	if err == errors.SongNotFound {
+	song, err := v.domain.EditSong(r.Context(), editRequest)
+
+	if err == errors.SongNotFoundErr {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

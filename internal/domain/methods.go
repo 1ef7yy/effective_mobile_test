@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,8 +14,8 @@ import (
 	"github.com/1ef7yy/effective_mobile_test/internal/models"
 )
 
-func (d *domain) GetSongs(limit, offset int) ([]models.Song, error) {
-	songs, err := d.pg.GetSongs(limit, offset)
+func (d *domain) GetSongs(ctx context.Context, limit, offset int, group, song string) ([]models.Song, error) {
+	songs, err := d.pg.GetSongs(ctx, limit, offset, group, song)
 	if err != nil {
 		d.log.Error("error getting songs: " + err.Error())
 		return nil, err
@@ -23,23 +24,12 @@ func (d *domain) GetSongs(limit, offset int) ([]models.Song, error) {
 	return songs, nil
 }
 
-func (d *domain) GetSong(group, song string) (models.Song, error) {
-	songData, err := d.pg.GetSong(group, song)
+func (d *domain) GetText(ctx context.Context, group, song string, limit, offset int) (models.TextResponse, error) {
+	text, err := d.pg.GetSongText(ctx, group, song)
 
-	if err == errors.SongNotFound {
-		return models.Song{}, err
+	if err == errors.SongNotFoundErr {
+		return models.TextResponse{}, err
 	}
-
-	if err != nil {
-		d.log.Error("error getting song data: " + err.Error())
-		return models.Song{}, err
-	}
-
-	return songData, nil
-}
-
-func (d *domain) GetText(group, song string, limit, offset int) (models.TextResponse, error) {
-	text, err := d.pg.GetSongText(group, song)
 
 	if err != nil {
 		d.log.Error("error getting song text: " + err.Error())
@@ -65,8 +55,8 @@ func (d *domain) GetText(group, song string, limit, offset int) (models.TextResp
 	}, nil
 }
 
-func (d *domain) DeleteSong(group, song string) error {
-	err := d.pg.DeleteSong(group, song)
+func (d *domain) DeleteSong(ctx context.Context, group, song string) error {
+	err := d.pg.DeleteSong(ctx, group, song)
 
 	if err != nil {
 		d.log.Error("error deleting a song: " + err.Error())
@@ -76,9 +66,13 @@ func (d *domain) DeleteSong(group, song string) error {
 	return nil
 }
 
-func (d *domain) CreateSong(songRequest models.CreateSongDTO) (models.Song, error) {
+func (d *domain) CreateSong(ctx context.Context, songRequest models.CreateSongDTO) (models.Song, error) {
 
 	info, err := d.CallInfoAPI(songRequest.Group, songRequest.Song)
+
+	if err == errors.AlreadyExistsErr {
+		return models.Song{}, err
+	}
 
 	if err != nil {
 		d.log.Error("error calling external API: " + err.Error())
@@ -93,7 +87,7 @@ func (d *domain) CreateSong(songRequest models.CreateSongDTO) (models.Song, erro
 		Link:        info.Link,
 	}
 
-	err = d.pg.CreateSong(song)
+	err = d.pg.CreateSong(ctx, song)
 	if err != nil {
 		d.log.Error("error creating song: " + err.Error())
 		return models.Song{}, err
@@ -102,10 +96,10 @@ func (d *domain) CreateSong(songRequest models.CreateSongDTO) (models.Song, erro
 	return song, nil
 }
 
-func (d *domain) EditSong(editRequest models.EditSongDTO) (models.Song, error) {
-	song, err := d.pg.EditSong(editRequest)
+func (d *domain) EditSong(ctx context.Context, editRequest models.EditSongDTO) (models.Song, error) {
+	song, err := d.pg.EditSong(ctx, editRequest)
 
-	if err == errors.SongNotFound {
+	if err == errors.SongNotFoundErr {
 		return models.Song{}, err
 	}
 
