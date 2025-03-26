@@ -19,3 +19,10 @@ INFO_SERVER_HOST=
 ```
 
 Mock /info server is at https://7cafb837-698b-43c9-b8ac-4e6cfe8b851e.mock.pstmn.io
+
+
+- [x] Get songs
+- [x] Get text
+- [x] Delete song
+- [x] Create song
+- [x] Edit song

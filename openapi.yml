@@ -31,7 +31,7 @@ paths:
           description: Internal server error
 
 
-  /songs:
+  /api/v1/songs:
     get:
       parameters:
         - name: limit
@@ -45,6 +45,16 @@ paths:
           required: false
           schema:
             type: number
+        - name: group
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: song
+          in: query
+          required: false
+          schema:
+            type: string
 
       responses:
         '200':
@@ -65,7 +75,7 @@ paths:
         '500':
           description: Internal server error
 
-  /text:
+  /api/v1/text:
     get:
       parameters:
         - name: group
@@ -99,15 +109,19 @@ paths:
                   - text
                 properties:
                   text:
-                    type: string
-                    example: Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - "Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?"
+                    - "Ooh\nYou set my soul alight\nOoh\nYou set my soul alight"
+
         '400':
           description: Bad request
 
         '500':
           description: Internal server error
 
-  /song:
     delete:
       summary: Delete a song
       parameters:
@@ -149,6 +163,8 @@ paths:
                 $ref: '#/components/schemas/Song'
         '400':
           description: Bad request
+        '409':
+          description: Conflict (already exists)
         '500':
           description: Internal server error
 
@@ -170,6 +186,8 @@ paths:
                 $ref: '#/components/schemas/Song'
         '400':
           description: Bad request
+        '404':
+          description: Not found
         '500':
           description: Internal server error
 
@@ -199,7 +217,7 @@ components:
           example: 16.07.2006
         text:
           type: string
-          example: Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight
+          example: "Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight"
         link:
           type: string
           example: https://www.youtube.com/watch?v=Xsp3_a-PMTw
@@ -228,3 +246,4 @@ components:
         song:
           type: string
           example: Supermassive Black Hole
+

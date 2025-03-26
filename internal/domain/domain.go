@@ -16,8 +16,12 @@ type domain struct {
 }
 
 type Domain interface {
-	GetSongs(limit, offset int) ([]models.Song, error)
-	DeleteSong(group, song string) error
+	GetSongs(ctx context.Context, limit, offset int, group, song string) ([]models.Song, error)
+	GetText(ctx context.Context, group, song string, limit, offset int) (models.TextResponse, error)
+	DeleteSong(ctx context.Context, group, song string) error
+	CreateSong(context.Context, models.CreateSongDTO) (models.Song, error)
+	EditSong(context.Context, models.EditSongDTO) (models.Song, error)
+	CallInfoAPI(group, song string) (models.InfoResponse, error)
 }
 
 func NewDomain(logger logger.Logger) (Domain, error) {

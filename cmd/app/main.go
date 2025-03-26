@@ -30,7 +30,7 @@ func main() {
 
 	if !ok {
 		serverAddr = "localhost:3000"
-		logger.Info("could not resolve SERVER_ADDRESS from environment, reverting to default: " + serverAddr)
+		logger.Warn("could not resolve SERVER_ADDRESS from environment, reverting to default: " + serverAddr)
 	}
 
 	logger.Info("starting server on " + serverAddr)
