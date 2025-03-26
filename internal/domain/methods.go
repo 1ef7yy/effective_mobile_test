@@ -126,14 +126,18 @@ func (d *domain) CallInfoAPI(group, song string) (models.InfoResponse, error) {
 	var info models.InfoResponse
 
 	respData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		d.log.Error("error reading response body")
+		return models.InfoResponse{}, err
+	}
 
 	err = json.Unmarshal(respData, &info)
 
-	d.log.Debug("response data: " + string(respData))
 	if err != nil {
 		d.log.Error("error unmarshalling external API: " + err.Error())
 		return models.InfoResponse{}, err
 	}
+	d.log.Debug("response data: " + string(respData))
 
 	return info, nil
 }

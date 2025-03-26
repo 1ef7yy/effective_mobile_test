@@ -135,6 +135,11 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := json.Marshal(text)
+	if err != nil {
+		v.log.Error("error marshalling text: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(resp)
