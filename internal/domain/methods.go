@@ -87,13 +87,18 @@ func (d *domain) CreateSong(ctx context.Context, songRequest models.CreateSongDT
 		Link:        info.Link,
 	}
 
-	err = d.pg.CreateSong(ctx, song)
+	songData, err := d.pg.CreateSong(ctx, song)
+
+	if err == errors.AlreadyExistsErr {
+		return models.Song{}, err
+	}
+
 	if err != nil {
 		d.log.Error("error creating song: " + err.Error())
 		return models.Song{}, err
 	}
 
-	return song, nil
+	return songData, nil
 }
 
 func (d *domain) EditSong(ctx context.Context, editRequest models.EditSongDTO) (models.Song, error) {
