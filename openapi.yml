@@ -226,12 +226,12 @@ components:
       required:
         - group
         - song
-        - releaseDate
+        - release_date
         - text
         - link
       type: object
       properties:
-        releaseDate:
+        release_date:
           type: string
           example: 16.07.2006
         text:

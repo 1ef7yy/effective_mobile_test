@@ -81,26 +81,37 @@ func (p *Postgres) DeleteSong(ctx context.Context, group, song string) error {
 	return nil
 }
 
-func (p *Postgres) CreateSong(ctx context.Context, song models.Song) error {
-	val, err := p.DB.Query(ctx, "INSERT INTO songs(group_name, song, release_date, text, link) VALUES($1, $2, $3, $4, $5) RETURNING group_name, song, release_date, text, link", song.Group, song.Song, song.ReleaseDate, song.Text, song.Link)
+func (p *Postgres) CreateSong(ctx context.Context, song models.Song) (models.Song, error) {
+	val, err := p.DB.Query(ctx,
+		`INSERT INTO songs(group_name, song, release_date, text, link) VALUES($1, $2, $3, $4, $5) RETURNING group_name, song, release_date, text, link`,
+		song.Group, song.Song, song.ReleaseDate, song.Text, song.Link)
 
 	if err != nil {
 		p.log.Error("error creating a song: " + err.Error())
-		return err
+		return models.Song{}, err
 	}
 
 	defer val.Close()
 
+	var songData models.Song
+
 	if !val.Next() {
 		p.log.Warn(fmt.Sprintf("song %v already exists", song))
-		return errors.AlreadyExistsErr
+		return models.Song{}, errors.AlreadyExistsErr
 	}
 
-	return nil
+	err = val.Scan(&songData.Group, &songData.Song, &songData.ReleaseDate, &songData.Text, &songData.Link)
+
+	if err != nil {
+		p.log.Error("error scanning into models.Song struct: " + err.Error())
+		return models.Song{}, err
+	}
+
+	return songData, nil
 }
 
 func (p *Postgres) EditSong(ctx context.Context, editRequest models.EditSongDTO) (models.Song, error) {
-	val, err := p.DB.Query(ctx, "UPDATE songs SET release_date=$1, text=$2, link=$3 WHERE group_name=$4 AND song=$5 RETURNING group_name, song, release_date, text, link", editRequest.ReleaseDate, editRequest.Text, editRequest.Link, editRequest.Group, editRequest.Song)
+	val, err := p.DB.Query(ctx, "UPDATE songs SET release_date=$1, text=$2, link=$3 WHERE group_name=$4 AND song=$5  RETURNING group_name, song, release_date, text, link", editRequest.ReleaseDate, editRequest.Text, editRequest.Link, editRequest.Group, editRequest.Song)
 
 	if err != nil {
 		p.log.Error("error editing a song: " + err.Error())
