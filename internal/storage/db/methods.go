@@ -9,7 +9,6 @@ import (
 )
 
 func (p *Postgres) GetSongs(ctx context.Context, limit, offset int, group, song string) ([]models.Song, error) {
-	// context work?
 	query := `
 		SELECT group_name, song, release_date, text, link
 		FROM songs

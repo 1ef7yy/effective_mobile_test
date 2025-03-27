@@ -19,7 +19,9 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 		offset = 0
 	)
 
-	limitQuery := r.URL.Query().Get("limit")
+	query := r.URL.Query()
+
+	limitQuery := query.Get("limit")
 
 	if limitQuery != "" {
 		limit, err = strconv.Atoi(limitQuery)
@@ -30,7 +32,7 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	offsetQuery := r.URL.Query().Get("offset")
+	offsetQuery := query.Get("offset")
 
 	if offsetQuery != "" {
 		offset, err = strconv.Atoi(offsetQuery)
@@ -50,8 +52,8 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	group := r.URL.Query().Get("group")
-	song := r.URL.Query().Get("song")
+	group := query.Get("group")
+	song := query.Get("song")
 
 	v.log.Debug(fmt.Sprintf("limitQuery: %s, offsetQuery: %s", limitQuery, offsetQuery))
 
@@ -92,16 +94,18 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 
 func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 
-	group := r.URL.Query().Get("group")
+	query := r.URL.Query()
 
-	song := r.URL.Query().Get("song")
+	group := query.Get("group")
+
+	song := query.Get("song")
 
 	if group == "" || song == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	limitQuery := r.URL.Query().Get("limit")
+	limitQuery := query.Get("limit")
 
 	var (
 		limit  int
@@ -120,7 +124,7 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	offsetQuery := r.URL.Query().Get("offset")
+	offsetQuery := query.Get("offset")
 
 	if offsetQuery == "" {
 		offset = 0
@@ -181,8 +185,10 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 
 }
 func (v *view) DeleteSong(w http.ResponseWriter, r *http.Request) {
-	group := r.URL.Query().Get("group")
-	song := r.URL.Query().Get("song")
+	query := r.URL.Query()
+
+	group := query.Get("group")
+	song := query.Get("song")
 
 	if group == "" || song == "" {
 		w.WriteHeader(http.StatusBadRequest)
