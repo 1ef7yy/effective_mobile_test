@@ -30,13 +30,13 @@ func main() {
 
 	if !ok {
 		serverAddr = "localhost:3000"
-		logger.Warn("could not resolve SERVER_ADDRESS from environment, reverting to default: " + serverAddr)
+		logger.Warnf("could not resolve SERVER_ADDRESS from environment, reverting to default: %s", serverAddr)
 	}
 
-	logger.Info("starting server on " + serverAddr)
+	logger.Infof("starting server on %s", serverAddr)
 
 	if err := http.ListenAndServe(serverAddr, mux); err != nil {
-		logger.Error("Error starting server: " + err.Error())
+		logger.Errorf("Error starting server: %s", err.Error())
 	}
 
 }

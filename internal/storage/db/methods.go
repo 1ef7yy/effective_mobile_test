@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/1ef7yy/effective_mobile_test/internal/errors"
 	"github.com/1ef7yy/effective_mobile_test/internal/models"
@@ -24,7 +23,7 @@ func (p *Postgres) GetSongs(ctx context.Context, limit, offset int, group, song 
 	val, err := p.DB.Query(ctx, query, groupFilter, songFilter, limit, offset)
 
 	if err != nil {
-		p.log.Error("error getting songs: " + err.Error())
+		p.log.Errorf("error getting songs: %s", err.Error())
 		return nil, err
 	}
 
@@ -36,7 +35,7 @@ func (p *Postgres) GetSongs(ctx context.Context, limit, offset int, group, song 
 		var song models.Song
 		err = val.Scan(&song.Group, &song.Song, &song.ReleaseDate, &song.Text, &song.Link)
 		if err != nil {
-			p.log.Error("error scanning into song struct: " + err.Error())
+			p.log.Errorf("error scanning into song struct: %s", err.Error())
 			return nil, err
 		}
 		songs = append(songs, song)
@@ -49,7 +48,7 @@ func (p *Postgres) GetSongText(ctx context.Context, group, song string) (string,
 	val, err := p.DB.Query(ctx, "SELECT text FROM songs WHERE group_name = $1 AND song = $2", group, song)
 
 	if err != nil {
-		p.log.Error("error getting song text from db: " + err.Error())
+		p.log.Errorf("error getting song text from db: %s", err.Error())
 		return "", err
 	}
 
@@ -62,7 +61,7 @@ func (p *Postgres) GetSongText(ctx context.Context, group, song string) (string,
 	}
 	err = val.Scan(&text)
 	if err != nil {
-		p.log.Error("error scanning into text: " + err.Error())
+		p.log.Errorf("error scanning into text: %s", err.Error())
 		return "", err
 	}
 
@@ -73,7 +72,7 @@ func (p *Postgres) DeleteSong(ctx context.Context, group, song string) error {
 	_, err := p.DB.Query(ctx, "DELETE FROM songs WHERE group_name = $1 AND song = $2", group, song)
 
 	if err != nil {
-		p.log.Error("error deleting a song: " + err.Error())
+		p.log.Errorf("error deleting a song: %s", err.Error())
 		return err
 	}
 
@@ -86,7 +85,7 @@ func (p *Postgres) CreateSong(ctx context.Context, song models.Song) (models.Son
 		song.Group, song.Song, song.ReleaseDate, song.Text, song.Link)
 
 	if err != nil {
-		p.log.Error("error creating a song: " + err.Error())
+		p.log.Errorf("error creating a song: %s", err.Error())
 		return models.Song{}, err
 	}
 
@@ -95,14 +94,14 @@ func (p *Postgres) CreateSong(ctx context.Context, song models.Song) (models.Son
 	var songData models.Song
 
 	if !val.Next() {
-		p.log.Warn(fmt.Sprintf("song %v already exists", song))
+		p.log.Warnf("song %v already exists", song)
 		return models.Song{}, errors.AlreadyExistsErr
 	}
 
 	err = val.Scan(&songData.Group, &songData.Song, &songData.ReleaseDate, &songData.Text, &songData.Link)
 
 	if err != nil {
-		p.log.Error("error scanning into models.Song struct: " + err.Error())
+		p.log.Errorf("error scanning into models.Song struct: %s", err.Error())
 		return models.Song{}, err
 	}
 
@@ -113,12 +112,12 @@ func (p *Postgres) EditSong(ctx context.Context, editRequest models.EditSongDTO)
 	val, err := p.DB.Query(ctx, "UPDATE songs SET release_date=$1, text=$2, link=$3 WHERE group_name=$4 AND song=$5  RETURNING group_name, song, release_date, text, link", editRequest.ReleaseDate, editRequest.Text, editRequest.Link, editRequest.Group, editRequest.Song)
 
 	if err != nil {
-		p.log.Error("error editing a song: " + err.Error())
+		p.log.Errorf("error editing a song: %s", err.Error())
 		return models.Song{}, err
 	}
 
 	if !val.Next() {
-		p.log.Warn(fmt.Sprintf("song %s - %s was not found", editRequest.Group, editRequest.Song))
+		p.log.Warnf("song %s - %s was not found", editRequest.Group, editRequest.Song)
 		return models.Song{}, errors.SongNotFoundErr
 	}
 
@@ -127,7 +126,7 @@ func (p *Postgres) EditSong(ctx context.Context, editRequest models.EditSongDTO)
 	err = val.Scan(&updatedSong.Group, &updatedSong.Song, &updatedSong.ReleaseDate, &updatedSong.Text, &updatedSong.Link)
 
 	if err != nil {
-		p.log.Error("error editing a song: " + err.Error())
+		p.log.Errorf("error editing a song: %s", err.Error())
 		return models.Song{}, err
 	}
 

@@ -2,7 +2,6 @@ package view
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -55,7 +54,7 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 	group := query.Get("group")
 	song := query.Get("song")
 
-	v.log.Debug(fmt.Sprintf("limitQuery: %s, offsetQuery: %s", limitQuery, offsetQuery))
+	v.log.Debugf("limitQuery: %s, offsetQuery: %s", limitQuery, offsetQuery)
 
 	songs, err := v.domain.GetSongs(r.Context(), limit, offset, group, song)
 
@@ -65,7 +64,7 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		v.log.Error("error gettings songs: " + err.Error())
+		v.log.Errorf("error gettings songs: ", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -77,7 +76,7 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 	resp, err := json.Marshal(songs)
 
 	if err != nil {
-		v.log.Error("error marshalling songs: " + err.Error())
+		v.log.Errorf("error marshalling songs: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -85,7 +84,7 @@ func (v *view) GetSongs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(resp)
 	if err != nil {
-		v.log.Error("error writing to client: " + err.Error())
+		v.log.Errorf("error writing to client: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -137,7 +136,7 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	v.log.Debug(fmt.Sprintf("offset: %d, limit: %d", offset, limit))
+	v.log.Debugf("offset: %d, limit: %d", offset, limit)
 
 	if limit < 0 || offset < 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -150,7 +149,7 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		_, err = w.Write([]byte(errors.OffsetOutOfRangeErr.Error()))
 		if err != nil {
-			v.log.Error("error writing to client: " + err.Error())
+			v.log.Errorf("error writing to client: %s", err.Error())
 			return
 		}
 	}
@@ -161,14 +160,14 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		v.log.Error("error getting text: " + err.Error())
+		v.log.Errorf("error getting text: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	resp, err := json.Marshal(text)
 	if err != nil {
-		v.log.Error("error marshalling text: " + err.Error())
+		v.log.Errorf("error marshalling text: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -176,7 +175,7 @@ func (v *view) GetText(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(resp)
 
 	if err != nil {
-		v.log.Error("error writing response: " + err.Error())
+		v.log.Errorf("error writing response: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -198,7 +197,7 @@ func (v *view) DeleteSong(w http.ResponseWriter, r *http.Request) {
 	err := v.domain.DeleteSong(r.Context(), group, song)
 
 	if err != nil {
-		v.log.Error("error deleting a song: " + err.Error())
+		v.log.Errorf("error deleting a song: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -213,7 +212,7 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&songRequest)
 
 	if err != nil {
-		v.log.Error("error decoding JSON body: " + err.Error())
+		v.log.Errorf("error decoding JSON body: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -229,14 +228,14 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 		_, err := w.Write([]byte(err.Error()))
 		if err != nil {
-			v.log.Error("error writing to client: " + err.Error())
+			v.log.Errorf("error writing to client: %s", err.Error())
 			return
 		}
 		return
 	}
 
 	if err != nil {
-		v.log.Error("error creating a song: " + err.Error())
+		v.log.Errorf("error creating a song: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -244,7 +243,7 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 	resp, err := json.Marshal(song)
 
 	if err != nil {
-		v.log.Error("error marshalling song: " + err.Error())
+		v.log.Errorf("error marshalling song: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -252,7 +251,7 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(resp)
 	if err != nil {
-		v.log.Error("error writing to client: " + err.Error())
+		v.log.Errorf("error writing to client: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -265,7 +264,7 @@ func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&editRequest)
 
 	if err != nil {
-		v.log.Error("error decoding JSON body: " + err.Error())
+		v.log.Errorf("error decoding JSON body: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -283,7 +282,7 @@ func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		v.log.Error("error editing a song: " + err.Error())
+		v.log.Errorf("error editing a song: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -291,7 +290,7 @@ func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	resp, err := json.Marshal(song)
 
 	if err != nil {
-		v.log.Error("error marshalling song: " + err.Error())
+		v.log.Errorf("error marshalling song: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -300,7 +299,7 @@ func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(resp)
 
 	if err != nil {
-		v.log.Error("error writing to client: " + err.Error())
+		v.log.Errorf("error writing to client: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

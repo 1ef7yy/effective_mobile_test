@@ -23,7 +23,7 @@ type View interface {
 func NewView(logger logger.Logger) (View, error) {
 	domain, err := domain.NewDomain(logger)
 	if err != nil {
-		logger.Error("error initializing domain: " + err.Error())
+		logger.Errorf("error initializing domain: %s", err.Error())
 		return nil, err
 	}
 

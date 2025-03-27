@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -27,7 +26,7 @@ func Config(dsn string, log logger.Logger) *pgxpool.Config {
 	dbConfig, err := pgxpool.ParseConfig(dsn)
 
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Failed to create a config: %s", err))
+		log.Fatalf("Failed to create a config: %s", err)
 	}
 
 	dbConfig.MaxConns = defaultMaxConns
@@ -37,12 +36,12 @@ func Config(dsn string, log logger.Logger) *pgxpool.Config {
 	dbConfig.HealthCheckPeriod = defaultHealthCheckPeriod
 	dbConfig.ConnConfig.ConnectTimeout = defaultConnectTimeout
 
-	log.Info(fmt.Sprintf("postgres: defaultMaxConns: %d", dbConfig.MaxConns))
-	log.Info(fmt.Sprintf("postgres: defaultMinConns: %d", dbConfig.MinConns))
-	log.Info(fmt.Sprintf("postgres: defaultMaxConnLifetime: %s", dbConfig.MaxConnLifetime))
-	log.Info(fmt.Sprintf("postgres: defaultMaxConnIdleTime: %s", dbConfig.MaxConnIdleTime))
-	log.Info(fmt.Sprintf("postgres: defaultHealthCheckPeriod: %s", dbConfig.HealthCheckPeriod))
-	log.Info(fmt.Sprintf("postgres: defaultConnectTimeout: %s", dbConfig.ConnConfig.ConnectTimeout))
+	log.Infof("postgres: defaultMaxConns: %d", dbConfig.MaxConns)
+	log.Infof("postgres: defaultMinConns: %d", dbConfig.MinConns)
+	log.Infof("postgres: defaultMaxConnLifetime: %s", dbConfig.MaxConnLifetime)
+	log.Infof("postgres: defaultMaxConnIdleTime: %s", dbConfig.MaxConnIdleTime)
+	log.Infof("postgres: defaultHealthCheckPeriod: %s", dbConfig.HealthCheckPeriod)
+	log.Infof("postgres: defaultConnectTimeout: %s", dbConfig.ConnConfig.ConnectTimeout)
 
 	dbConfig.BeforeClose = func(c *pgx.Conn) {
 		log.Info("Closed the connection pool.")
@@ -61,7 +60,7 @@ func NewPostgres(ctx context.Context, dsn string, log logger.Logger) (*Postgres,
 	pgOnce.Do(func() {
 		db, err := pgxpool.NewWithConfig(ctx, Config(dsn, log))
 		if err != nil {
-			log.Fatal("Unable to connect to database: " + err.Error())
+			log.Fatalf("Unable to connect to database: %s", err.Error())
 			pgErr = err
 		}
 
