@@ -243,13 +243,13 @@ func (v *view) CreateSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(resp)
 	if err != nil {
 		v.log.Error("error writing to client: " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
 }
 func (v *view) EditSong(w http.ResponseWriter, r *http.Request) {
 	var editRequest models.EditSongDTO
