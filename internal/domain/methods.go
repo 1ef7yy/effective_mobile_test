@@ -17,7 +17,7 @@ import (
 func (d *domain) GetSongs(ctx context.Context, limit, offset int, group, song string) ([]models.Song, error) {
 	songs, err := d.pg.GetSongs(ctx, limit, offset, group, song)
 	if err != nil {
-		d.log.Error("error getting songs: " + err.Error())
+		d.log.Errorf("error getting songs: %s", err.Error())
 		return nil, err
 	}
 
@@ -32,14 +32,14 @@ func (d *domain) GetText(ctx context.Context, group, song string, limit, offset 
 	}
 
 	if err != nil {
-		d.log.Error("error getting song text: " + err.Error())
+		d.log.Errorf("error getting song text: %s", err.Error())
 		return models.TextResponse{}, err
 	}
 
 	verses := strings.Split(text, "\n\n")
 
-	d.log.Debug(fmt.Sprintf("verses: %v", verses))
-	d.log.Debug(fmt.Sprintf("verses len: %d", len(verses)))
+	d.log.Debugf("verses: %v", verses)
+	d.log.Debugf("verses len: %d", len(verses))
 
 	if offset >= len(verses) {
 		return models.TextResponse{}, errors.OffsetOutOfRangeErr
@@ -59,7 +59,7 @@ func (d *domain) DeleteSong(ctx context.Context, group, song string) error {
 	err := d.pg.DeleteSong(ctx, group, song)
 
 	if err != nil {
-		d.log.Error("error deleting a song: " + err.Error())
+		d.log.Errorf("error deleting a song: %s", err.Error())
 		return err
 	}
 
@@ -75,7 +75,7 @@ func (d *domain) CreateSong(ctx context.Context, songRequest models.CreateSongDT
 	}
 
 	if err != nil {
-		d.log.Error("error calling external API: " + err.Error())
+		d.log.Errorf("error calling external API: %s", err.Error())
 		return models.Song{}, err
 	}
 
@@ -94,7 +94,7 @@ func (d *domain) CreateSong(ctx context.Context, songRequest models.CreateSongDT
 	}
 
 	if err != nil {
-		d.log.Error("error creating song: " + err.Error())
+		d.log.Errorf("error creating song: %s", err.Error())
 		return models.Song{}, err
 	}
 
@@ -109,7 +109,7 @@ func (d *domain) EditSong(ctx context.Context, editRequest models.EditSongDTO) (
 	}
 
 	if err != nil {
-		d.log.Error("error editing song: " + err.Error())
+		d.log.Errorf("error editing song: %s", err.Error())
 		return models.Song{}, nil
 	}
 
@@ -122,7 +122,7 @@ func (d *domain) CallInfoAPI(group, song string) (models.InfoResponse, error) {
 		return models.InfoResponse{}, fmt.Errorf("could not resolve external API host")
 	}
 
-	d.log.Debug("info server host: " + externalAPIHost)
+	d.log.Debugf("info server host: %s", externalAPIHost)
 
 	queries := fmt.Sprintf("group=%s&song=%s", group, song)
 
@@ -133,7 +133,7 @@ func (d *domain) CallInfoAPI(group, song string) (models.InfoResponse, error) {
 
 	resp, err := http.Get(URL)
 	if err != nil {
-		d.log.Error("error GETting external API: " + err.Error())
+		d.log.Errorf("error GETting external API: %s", err.Error())
 		return models.InfoResponse{}, err
 	}
 
@@ -148,10 +148,10 @@ func (d *domain) CallInfoAPI(group, song string) (models.InfoResponse, error) {
 	err = json.Unmarshal(respData, &info)
 
 	if err != nil {
-		d.log.Error("error unmarshalling external API: " + err.Error())
+		d.log.Errorf("error unmarshalling external API: %s", err.Error())
 		return models.InfoResponse{}, err
 	}
-	d.log.Debug("response data: " + string(respData))
+	d.log.Debugf("response data: %s", string(respData))
 
 	return info, nil
 }

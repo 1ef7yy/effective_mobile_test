@@ -11,6 +11,12 @@ type Logger interface {
 	Warn(msg string)
 	Error(msg string)
 	Fatal(msg string)
+
+	Debugf(msg string, args ...interface{})
+	Infof(msg string, args ...interface{})
+	Warnf(msg string, args ...interface{})
+	Errorf(msg string, args ...interface{})
+	Fatalf(msg string, args ...interface{})
 }
 
 type logger struct {

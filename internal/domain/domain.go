@@ -32,7 +32,7 @@ func NewDomain(logger logger.Logger) (Domain, error) {
 	}
 	pg, err := db.NewPostgres(context.Background(), postgresConn, logger)
 	if err != nil {
-		logger.Error("Unable to create connection to database: " + err.Error())
+		logger.Errorf("Unable to create connection to database: %s", err.Error())
 		return nil, err
 	}
 	return &domain{
