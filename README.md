@@ -9,7 +9,7 @@ docker compose up
 
 Мок /info сервер: https://7cafb837-698b-43c9-b8ac-4e6cfe8b851e.mock.pstmn.io
 
-Postman коллекция: https://app.getpostman.com/join-team?invite_code=e7ed0eb5cc4e65c03b7a4402c8c1b2ae9f44ea91911c300567e0c2fa4c4bb06a
+Postman коллекция: https://effective-mobile-test.postman.co/workspace/Effective-Mobile-Test-Workspace~abc18048-d8c3-4f24-a064-9f4261a5069e/collection/33950163-41a65dc7-ccbf-428e-9b8a-7a0934b63277?action=share&creator=33950163
 
 Для миграций был использован goose
 
